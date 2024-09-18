@@ -1,0 +1,56 @@
+$date
+	Wed Sep 18 21:16:54 2024
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	1s
+$end
+$scope module tb_program_counter $end
+$var wire 16 ! pc [15:0] $end
+$var reg 1 " clk $end
+$var reg 16 # next_pc [15:0] $end
+$var reg 1 $ reset $end
+$scope module uut $end
+$var wire 1 " clk $end
+$var wire 16 % next_pc [15:0] $end
+$var wire 1 $ reset $end
+$var reg 16 & pc [15:0] $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+$end
+#20
+$dumpvars
+b0 &
+b101 %
+0$
+b101 #
+0"
+b0 !
+$end
+#25
+b101 !
+b101 &
+1"
+#30
+0"
+b10000 #
+b10000 %
+#35
+b10000 !
+b10000 &
+1"
+#40
+b0 !
+b0 &
+0"
+1$
+#45
+1"
+#50
+0"
+0$
