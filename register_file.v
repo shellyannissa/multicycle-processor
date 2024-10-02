@@ -7,7 +7,7 @@ module register_file (
     input [15:0] wd,            // Write data
     output reg [15:0] rd1,      // Read data 1
     output reg [15:0] rd2,      // Read data 2 or immediate value (for LW, SW)
-    output reg [15:0] sw        // Store word for SW
+    output reg [15:0] sw        // Data for SW
 );
     reg [15:0] regfile [7:0];     // 8 registers of 16 bits each
     wire [3:0] opcode = instruction[15:12];   

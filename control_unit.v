@@ -18,9 +18,9 @@ module control_unit(
         else begin
             case (state)
                 IF: state <= ID;
-                ID: if (opcode == 4'b1101) state <= WB;
+                ID: if (opcode == 4'b1101) state <= WB; // JAL
                     else state <= EX;
-                EX: if (opcode == 4'b1010 || opcode == 4'b1001) state <= MEM; //LW SW
+                EX: if (opcode == 4'b1010 || opcode == 4'b1001) state <= MEM; //LW, SW
                     else state <= WB;
                 MEM: state <= WB;
                 WB: state <= IF;
@@ -59,7 +59,6 @@ module control_unit(
             end
             MEM: begin
                 if (opcode == 4'b1010) begin //LW
-                    // RegWrite = 1; //handled in WB
                     MemRead = 1;
                     MemWrite = 0;
                 end
