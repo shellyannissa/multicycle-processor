@@ -5,7 +5,7 @@ module control_unit(
     input carry,
     input [3:0] opcode,
     input [1:0] funct,
-    output reg RegWrite, MemRead, MemWrite, PCWrite, ALUSrc, Branch,
+    output reg RegWrite, MemRead, MemWrite, PCWrite, Branch, JAL,
     output reg [1:0] ALUControl,
     output reg [2:0] state //FSM state
 );
@@ -18,7 +18,8 @@ module control_unit(
         else begin
             case (state)
                 IF: state <= ID;
-                ID: state <= EX;
+                ID: if (opcode == 4'b1101) state <= WB;
+                    else state <= EX;
                 EX: if (opcode == 4'b1010 || opcode == 4'b1001) state <= MEM; //LW SW
                     else state <= WB;
                 MEM: state <= WB;
@@ -34,16 +35,15 @@ module control_unit(
                 RegWrite = 0;
                 MemRead = 0;
                 MemWrite = 0;
-                PCWrite = 1;
-                ALUSrc = 0;
+                PCWrite = 0;
                 Branch = 0;
+                JAL = 0;    
             end
             ID: begin
                 RegWrite = 0;
                 MemRead = 0;
                 MemWrite = 0;
-                PCWrite = 0;
-                ALUSrc = 0;
+                // PCWrite = 0;
                 Branch = 0;
             end
             EX: begin   
@@ -53,16 +53,17 @@ module control_unit(
                     4'b0010: ALUControl = 2'b01; // NDU
                     4'b0011: ALUControl = 2'b01; // NDZ
                     4'b1011: ALUControl = 2'b10; // BEQ (SUB for comparison)
-                    
+                    4'b1010: ALUControl = 2'b00; // LW
+                    4'b1001: ALUControl = 2'b00; // SW
                 endcase
-                ALUSrc = 1;
             end
             MEM: begin
-                if (opcode = 4'b1010) begin //LW
-                    RegWrite = 1;
+                if (opcode == 4'b1010) begin //LW
+                    // RegWrite = 1; //handled in WB
                     MemRead = 1;
+                    MemWrite = 0;
                 end
-                else if (opcode = 4'b1001) begin //SW
+                else if (opcode == 4'b1001) begin //SW
                     RegWrite = 0;
                     MemRead = 0;
                     MemWrite = 1;
@@ -71,19 +72,23 @@ module control_unit(
             WB: begin
                 RegWrite = ( 
                             ({opcode, funct} == 6'b000000) || //ADD
-                            (({opcode, funct} == 6'b000001) && (carry == 1)) || //ADC
+                            (({opcode, funct} == 6'b000010) && (carry == 1)) || //ADC
                              {opcode, funct} == 6'b001000 || //NDU
                             (({opcode, funct} == 6'b001001) && (zero == 1)) || //NDZ
-                            ({opcode, funct} == 6'b101100) //BEQ
                             (opcode == 4'b1010) || //LW
                             (opcode == 4'b1101) ) //JAL
                                 ? 1 : 0;
                 MemRead = 0;
                 MemWrite = 0;
-                PCWrite = 0;
-                ALUSrc = 0;
-                Branch = 0;
+                PCWrite = 1;
+                Branch = (opcode == 4'b1011) ? 1 : 0;
+                JAL = (opcode == 4'b1101) ? 1 : 0;
             end
         endcase
     end
+
+    // always @(state, RegWrite, MemRead, MemWrite, PCWrite, Branch, JAL, ALUControl) begin
+    // $display("Control Unit: time %0d, State = %b, RegWrite = %b, MemRead = %b, MemWrite = %b, PCWrite = %b, Branch = %b, JAL = %b, Zero = %b Carry = %b, ALUControl = %b",
+    //          $time, state, RegWrite, MemRead, MemWrite, PCWrite, Branch, JAL, zero, carry, ALUControl);
+    // end
 endmodule

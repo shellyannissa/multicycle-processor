@@ -14,10 +14,8 @@ module data_memory(
         if (MemRead) begin
             rd <= memory[address];
         end
+
+        // $display("Data Memory: At time %0d, val at addr %h is %h", $time, address, memory[address]);
     end
 
-    // always @(*) begin
-    //     if (MemRead)
-    //         rd = memory[address];
-    // end
 endmodule

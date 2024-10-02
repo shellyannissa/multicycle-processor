@@ -4,9 +4,9 @@ module nitc_risc24_processor(
 );
 
     //Wire declaration for connecting the modules
-    wire [15:0] pc, next_pc, intsruction, alu_out, rd1, rd2, mem_out, link_address;
+    wire [15:0] pc, next_pc, instruction, alu_out, rd1, rd2, sw, mem_out, reg_write_data;
     wire [1:0] alu_ctrl, funct;
-    wire zero, carry, RegWrite, MemWrite, MemRead, PCWrite, Branch, ALUSrc;
+    wire zero, carry, RegWrite, MemWrite, MemRead, PCWrite, Branch, JAL;
 
     //Instantiating the modules
 
@@ -14,32 +14,35 @@ module nitc_risc24_processor(
     program_counter prog_ctr(
         .clk(clk),
         .reset(reset),
+        .PCWrite(PCWrite),
         .next_pc(next_pc),
         .pc(pc)
     );
 
     // Instruction Memory
     instruction_memory inst_mem(
-        .address(pc), // The PC provides the address
-        .instruction(instruction) // Instruction output to the datapath
+        .address(pc),
+        .instruction(instruction) 
     );
 
     // Register File
     register_file reg_file(
         .clk(clk),
         .RegWrite(RegWrite),
-        .ra(intsruction[11:9]),
-        .rb(intsruction[8:6]),
-        .rc(intsruction[5:3])
-        .wd(alu_out),
+        .PCWrite(PCWrite),
+        .next_pc(next_pc),
+        .instruction(instruction),
+        .wd(reg_write_data),
+        .reset(reset),
         .rd1(rd1),
-        .rd2(rd2)
+        .rd2(rd2),
+        .sw(sw)
     );
 
     // ALU
     alu alu(
         .a(rd1),
-        .b(ALUSrc ? mem_out : rd2),
+        .b(rd2),
         .alu_ctrl(alu_ctrl),
         .alu_out(alu_out),
         .zero(zero),
@@ -52,7 +55,7 @@ module nitc_risc24_processor(
         .MemRead(MemRead),
         .MemWrite(MemWrite),
         .address(alu_out),
-        .wd(rd2),
+        .wd(sw),
         .rd(mem_out)
     );
 
@@ -60,28 +63,66 @@ module nitc_risc24_processor(
     control_unit ctrl_unit(
         .clk(clk),
         .reset(reset),
-        .opcode(intsruction[15:12]),
+        .opcode(instruction[15:12]),
         .zero(zero),
         .carry(carry),
-        .funct(intsruction[1:0]),
+        .JAL(JAL),
+        .funct(instruction[1:0]),
         .RegWrite(RegWrite),
         .MemRead(MemRead),
         .MemWrite(MemWrite),
         .PCWrite(PCWrite),
-        .ALUSrc(ALUSrc),
         .Branch(Branch),
         .ALUControl(alu_ctrl)
     );
 
+    // Multiplexer for selecting the data to write to the register file
+    assign reg_write_data = (instruction[15:12] == 4'b1010) ? mem_out :  // LW instruction
+                            (instruction[15:12] == 4'b1101) ? (pc + 1) :  // JAL instruction
+                            alu_out; 
+
     next_pc_logic pc_logic(
-        .pc(pc),                   // Current PC
-        .instruction(instruction),  // Current instruction
-        .zero_flag(zero),           // Zero flag for conditional branch
-        .branch(Branch),     // Branch signal (from control unit)
-        .jal(0),           // JAL signal (from control unit) //todo
-        .next_pc(next_pc),          // Computed next PC
-        .link_address(link_address) // Return address for JAL
+        .pc(pc),                   
+        .instruction(instruction),  
+        .zero_flag(zero),           
+        .branch(Branch),     
+        .jal(JAL),           
+        .next_pc(next_pc)         
     );
 
+    always @(negedge PCWrite) begin
+        casex({instruction[15:12], instruction[1:0]})
+            6'b000000: begin
+                $display("Time: %0d ADD R%d, R%d, R%d ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:6], instruction[5:3], zero, carry);
+            end
+            6'b000010: begin
+                $display("Time: %0d ADC R%d, R%d, R%d ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:6], instruction[5:3], zero, carry);
+            end
+            6'b001000: begin
+                $display("Time: %0d NDU R%d, R%d, R%d ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:6], instruction[5:3], zero, carry);
+            end
+            6'b001001: begin
+                $display("Time: %0d NDZ R%d, R%d, R%d ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:6], instruction[5:3], zero, carry);
+            end
+            6'b1010??: begin
+                $display("Time: %0d LW R%d, R%d, Imm: %b  ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:6], instruction[5:0], zero, carry);
+            end
+            6'b1001??: begin
+                $display("Time: %0d SW R%d, R%d, Imm: %b  ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:6], instruction[5:0], zero, carry);
+            end
+            6'b1011??: begin
+                $display("Time: %0d BEQ R%d, R%d, Imm: %b  ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:6], instruction[5:0], zero, carry);
+            end
+            6'b1101??: begin
+                $display("Time: %0d JAL R%d, Imm: %b ZERO: %b, CARRY: %b", $time, instruction[11:9], instruction[8:0], zero, carry);
+            end
+        endcase
+
+
+    end
+
+    always @(posedge clk) begin
+        $display("-----------------------------------------------");
+    end
 
 endmodule
