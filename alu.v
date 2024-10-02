@@ -11,8 +11,5 @@ module alu(
             2'b10: alu_out = a - b; // SUB
         endcase
         zero = (alu_out == 16'b0);
-
-        // $display("ALU: At time %0d, a = %h, b = %h, alu_ctrl = %b, alu_out = %h, zero = %b, carry = %b",
-        //          $time, a, b, alu_ctrl, alu_out, zero, carry);
     end
 endmodule     

@@ -86,8 +86,4 @@ module control_unit(
         endcase
     end
 
-    // always @(state, RegWrite, MemRead, MemWrite, PCWrite, Branch, JAL, ALUControl) begin
-    // $display("Control Unit: time %0d, State = %b, RegWrite = %b, MemRead = %b, MemWrite = %b, PCWrite = %b, Branch = %b, JAL = %b, Zero = %b Carry = %b, ALUControl = %b",
-    //          $time, state, RegWrite, MemRead, MemWrite, PCWrite, Branch, JAL, zero, carry, ALUControl);
-    // end
 endmodule

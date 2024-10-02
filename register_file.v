@@ -52,11 +52,6 @@ module register_file (
             regfile[0] <= next_pc; // Update PC
         end
         
-        // Display source and destination registers and all current register values
-        // $display("RegFile: Time: %0d, Opcode: %b, rsrc: R%d, rdst: R%d sw: %h", $time, opcode, rsrc, rdst, sw);
-        // $display("Register values: R0 = %h, R1 = %h, R2 = %h, R3 = %h, R4 = %h, R5 = %h, R6 = %h, R7 = %h", 
-        //          regfile[0], regfile[1], regfile[2], regfile[3], regfile[4], regfile[5], regfile[6], regfile[7]);
-        
     end
 
     always @(negedge PCWrite) begin

@@ -15,7 +15,6 @@ module data_memory(
             rd <= memory[address];
         end
 
-        // $display("Data Memory: At time %0d, val at addr %h is %h", $time, address, memory[address]);
     end
 
 endmodule
