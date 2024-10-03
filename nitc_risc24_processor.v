@@ -82,6 +82,7 @@ module nitc_risc24_processor(
                             alu_out; 
 
     next_pc_logic pc_logic(
+        
         .pc(pc),                   
         .instruction(instruction),  
         .zero_flag(zero),           

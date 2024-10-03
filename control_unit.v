@@ -48,10 +48,8 @@ module control_unit(
             end
             EX: begin   
                 case (opcode)
-                    4'b0001: ALUControl = 2'b00; // ADC
-                    4'b0000: ALUControl = 2'b00; // ADD
-                    4'b0010: ALUControl = 2'b01; // NDU
-                    4'b0011: ALUControl = 2'b01; // NDZ
+                    4'b0000: ALUControl = 2'b00; // ADD, ADC
+                    4'b0010: ALUControl = 2'b01; // NDU, NDZ
                     4'b1011: ALUControl = 2'b10; // BEQ (SUB for comparison)
                     4'b1010: ALUControl = 2'b00; // LW
                     4'b1001: ALUControl = 2'b00; // SW
